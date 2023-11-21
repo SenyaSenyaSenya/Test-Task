@@ -21,7 +21,7 @@ class SplashActivity : AppCompatActivity() {
         logoImageView.startAnimation(scaleAnimation)
 
         Handler().postDelayed({
-            val intent = Intent(this@SplashActivity, HomeScreen::class.java)
+            val intent = Intent(this@SplashActivity, HomeScreenActivity::class.java)
             startActivity(intent)
             finish()
         }, SPLASH_DELAY)

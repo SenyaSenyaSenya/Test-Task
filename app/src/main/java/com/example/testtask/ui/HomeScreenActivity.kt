@@ -1,28 +1,26 @@
 package com.example.testtask.ui
 
+import PexelsPhotoAdapter
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.Menu
-import android.view.MenuItem
-import android.view.View
 import android.widget.AbsListView
 import android.widget.EditText
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.testtask.ui.adapter.PexelsPhotoAdapter
-import com.example.testtask.viewmodels.PexelsViewModel
-import com.example.testtask.viewmodels.ViewModelFactory
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.example.testtask.R
 import com.example.testtask.util.EditTextUtils
 import com.example.testtask.util.NetworkUtils
+import com.example.testtask.viewmodels.PexelsViewModel
+import com.example.testtask.viewmodels.ViewModelFactory
 
-class HomeScreen : AppCompatActivity() {
-
+class HomeScreenActivity : AppCompatActivity() {
     private lateinit var gridLayoutManager: GridLayoutManager
     private lateinit var adapter: PexelsPhotoAdapter
     private lateinit var recyclerView: RecyclerView
@@ -36,7 +34,7 @@ class HomeScreen : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_home_screen)
         recyclerView = findViewById(R.id.recyclerView)
         val layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         recyclerView.layoutManager = layoutManager
@@ -48,9 +46,16 @@ class HomeScreen : AppCompatActivity() {
         requestForData(false, "", false)
         val searchEditText = findViewById<EditText>(R.id.editText)
         EditTextUtils.addClearButton(searchEditText)
+        searchEditText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
-        initialiseAdapter()
-        requestForData(false, "", false)
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
+            override fun afterTextChanged(s: Editable?) {
+                val query = s.toString().trim()
+                performSearch(query)
+            }
+        })
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
@@ -80,63 +85,43 @@ class HomeScreen : AppCompatActivity() {
         })
     }
 
-    // Initialize GridLayoutManager for recyclerView
+    private fun performSearch(query: String) {
+        if (query.isNotEmpty()) {
+            isPhotoSearch = true
+            searchQuery = query
+            requestForData(isPhotoSearch, searchQuery, true)
+        } else {
+            Toast.makeText(this, "Please enter a search query", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun initialiseAdapter() {
         val layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         recyclerView.layoutManager = layoutManager
         observeData()
     }
 
-    // Initialize adapter for recyclerView
-    fun observeData() {
+    private fun observeData() {
         adapter = PexelsPhotoAdapter(this, viewModel.arrayList)
         recyclerView.adapter = adapter
     }
 
-    // Request for parse data to viewModel
-    fun requestForData(isSearch: Boolean, searchQuery: String, isAction: Boolean) {
-
-        if (NetworkUtils.isNetworkAvailable(this))
-            viewModel.getPexelsData(this, isSearch, searchQuery, isAction, adapter)
-        else
+    private fun requestForData(isSearch: Boolean, searchQuery: String, isAction: Boolean) {
+        if (NetworkUtils.isNetworkAvailable(this)) {
+            try {
+                viewModel.getPexelsData(this, isSearch, searchQuery, isAction, adapter)
+            } catch (e: Exception) {
+                val errorMessage = "Network request failed: ${e.message}"
+                Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show()
+            }
+        } else {
             Toast.makeText(this, "No Internet Connection", Toast.LENGTH_LONG).show()
+        }
     }
 
     @SuppressLint("ResourceType")
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.xml.search_menu, menu)
-
         return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.search) {
-            val alert = AlertDialog.Builder(this)
-            val editText = EditText(this)
-            editText.textAlignment = View.TEXT_ALIGNMENT_CENTER
-            alert.setMessage("Enter Category e.g. Nature")
-            alert.setTitle("Search Wallpaper")
-            alert.setView(editText)
-            alert.setPositiveButton(
-                "Yes"
-            ) { dialogInterface, i ->
-                val query = editText.text.toString().toLowerCase()
-
-                if (!query.isNullOrEmpty()) {
-                    isPhotoSearch = true
-                    searchQuery = query
-                    requestForData(isPhotoSearch, searchQuery, true)
-                }
-            }
-            alert.setNegativeButton(
-                "No"
-            ) { dialogInterface, i -> }
-            alert.show()
-        } else if (item.itemId == R.id.allPhotoSearch) {
-            isPhotoSearch = false
-            requestForData(isPhotoSearch, "", true)
-        }
-
-        return super.onOptionsItemSelected(item)
     }
 }

@@ -1,5 +1,6 @@
 package com.example.testtask.viewmodels
 
+import PexelsPhotoAdapter
 import android.app.AlertDialog
 import android.content.Context
 import androidx.lifecycle.MutableLiveData
@@ -10,7 +11,6 @@ import com.android.volley.Response
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.example.testtask.model.PexelsImageWrapper
-import com.example.testtask.ui.adapter.PexelsPhotoAdapter
 import org.json.JSONException
 import org.json.JSONObject
 
@@ -46,7 +46,7 @@ class PexelsViewModel : ViewModel() {
         var url = String()
         if (isSearch) {
             url =
-                "https://api.pexels.com/v1/search/?page=$pageNumber&per_page=30&query=$searchQuery"
+                "https://api.pexels.com/v1/search/?page=$pageNumber&per_page=80&query=$searchQuery"
         } else {
             url = "https://api.pexels.com/v1/curated/?page=$pageNumber&per_page=30"
         }
@@ -90,7 +90,7 @@ class PexelsViewModel : ViewModel() {
             @Throws(AuthFailureError::class)
             override fun getHeaders(): Map<String, String> {
                 val params: MutableMap<String, String> = HashMap()
-                params["Authorization"] = "563492ad6f917000010000017c4f9e902b4d4e9faef6b16a3d2c9584"
+                params["Authorization"] = "MNmAc04M8gHVwC2sAPybzs4o1E4jnSEBgvo3HmlTYp3mU0mKvbombz7p"
                 return params
             }
         }

@@ -7,9 +7,9 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_app"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@mipmap/ic_app_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.PexelsPhotoApp">
 
@@ -21,6 +21,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+        </activity>
+        <activity
+            android:name="com.example.testtask.ui.DetailsScreenActivity"
+            android:label="FullScreen">
+        </activity>
+        <activity
+            android:name="com.example.testtask.ui.HomeScreenActivity"
+            android:label="HomeScreen">
         </activity>
     </application>
 

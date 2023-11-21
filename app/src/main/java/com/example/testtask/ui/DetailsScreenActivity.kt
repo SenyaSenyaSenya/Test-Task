@@ -7,18 +7,18 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.ProgressBar
 import androidx.appcompat.app.AppCompatActivity
-import com.pexels.photo.search.R
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
+import com.example.testtask.R
 
 /**
  * Show photo to a full screen mode
  * User can also back to previous screen using device back button or using custom back button
  */
-class FullScreenPhotoActivity : AppCompatActivity() {
+class DetailsScreenActivity : AppCompatActivity() {
 
     var originalUrl = String()
     lateinit var photoView: ImageView
