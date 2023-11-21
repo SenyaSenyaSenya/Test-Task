@@ -17,8 +17,6 @@ import org.json.JSONObject
 class PexelsViewModel : ViewModel() {
 
     var pageNumber = 1
-    var lst = MutableLiveData<ArrayList<PexelsImageWrapper>>()
-    var newlist = arrayListOf<PexelsImageWrapper>()
     var arrayList = ArrayList<PexelsImageWrapper>()
 
     fun getPexelsData(

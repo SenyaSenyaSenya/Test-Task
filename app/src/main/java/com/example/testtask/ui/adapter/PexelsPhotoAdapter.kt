@@ -13,9 +13,9 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
+import com.example.testtask.ui.DetailsScreenActivity
 import com.example.testtask.R
 import com.example.testtask.model.PexelsImageWrapper
-import com.example.testtask.ui.DetailsScreenActivity
 import java.util.*
 
 class PexelsPhotoAdapter(
@@ -35,7 +35,7 @@ class PexelsPhotoAdapter(
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(viewGroup.context)
-            .inflate(R.layout.inflate, viewGroup, false)
+            .inflate(R.layout.image_form, viewGroup, false)
 
         val screenWidth = context.resources.displayMetrics.widthPixels
         val itemWidth = screenWidth / 2
@@ -85,8 +85,10 @@ class PexelsPhotoAdapter(
 
         viewHolder.imageView.setOnClickListener {
             val originalUrl = image.originalUrl
+            val photographer = image.photographer // Извлекаем имя фотографа
             val intent = Intent(context, DetailsScreenActivity::class.java)
             intent.putExtra("originalUrl", originalUrl)
+            intent.putExtra("photographer", photographer) // Передаем значение photographer в Intent
             context.startActivity(intent)
         }
     }
