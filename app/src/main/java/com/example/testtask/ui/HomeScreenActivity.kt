@@ -1,5 +1,6 @@
 package com.example.testtask.ui
 
+import BottomNavigationHelper
 import PexelsPhotoAdapter
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -19,6 +20,7 @@ import com.example.testtask.util.EditTextUtils
 import com.example.testtask.util.NetworkUtils
 import com.example.testtask.viewmodels.PexelsViewModel
 import com.example.testtask.viewmodels.ViewModelFactory
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class HomeScreenActivity : AppCompatActivity() {
     private lateinit var gridLayoutManager: GridLayoutManager
@@ -31,9 +33,11 @@ class HomeScreenActivity : AppCompatActivity() {
     var scrollOutItems = 0
     var searchQuery = String()
     private lateinit var viewModel: PexelsViewModel
-
+    private lateinit var bottomNavigationView: BottomNavigationView
+    private lateinit var bottomNavigationHelper: BottomNavigationHelper
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.slide_out_right)
         setContentView(R.layout.activity_home_screen)
         recyclerView = findViewById(R.id.recyclerView)
         val layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
@@ -41,7 +45,8 @@ class HomeScreenActivity : AppCompatActivity() {
         val application = requireNotNull(this).application
         val factory = ViewModelFactory()
         viewModel = ViewModelProviders.of(this, factory).get(PexelsViewModel::class.java)
-
+        bottomNavigationView = findViewById(R.id.bottomNavigationView)
+        bottomNavigationHelper = BottomNavigationHelper(this, bottomNavigationView)
         initialiseAdapter()
         requestForData(false, "", false)
         val searchEditText = findViewById<EditText>(R.id.editText)

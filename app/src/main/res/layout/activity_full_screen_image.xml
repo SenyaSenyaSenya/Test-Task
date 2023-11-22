@@ -67,7 +67,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginEnd="16dp"
             android:contentDescription="Bookmark Button"
-            android:src="@drawable/button_bookmark_inactive" />
+            android:src="@drawable/button_bookmark" />
 
     </LinearLayout>
 

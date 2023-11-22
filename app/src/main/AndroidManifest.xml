@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.pexels.photo.search">
+    package="com.example.testtask">
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_app"
@@ -12,24 +13,24 @@
         android:roundIcon="@mipmap/ic_app_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.PexelsPhotoApp">
-
-        <activity android:name="com.example.testtask.ui.SplashActivity"
+        <activity
+            android:name=".ui.BookmarkScreenActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
         <activity
-            android:name="com.example.testtask.ui.DetailsScreenActivity"
-            android:label="FullScreen">
-        </activity>
+            android:name=".ui.DetailsScreenActivity"
+            android:label="FullScreen"></activity>
         <activity
-            android:name="com.example.testtask.ui.HomeScreenActivity"
-            android:label="HomeScreen">
-        </activity>
+            android:name=".ui.HomeScreenActivity"
+            android:label="HomeScreen"></activity>
     </application>
 
 </manifest>

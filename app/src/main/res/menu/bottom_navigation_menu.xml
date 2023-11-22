@@ -1,0 +1,12 @@
+<menu xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/menu_home"
+        android:icon="@drawable/ic_home_disabled"
+        tools:ignore="MenuTitle" />
+    <item
+        android:id="@+id/menu_bookmark"
+        android:icon="@drawable/ic_bookmark_enabled"
+        tools:ignore="MenuTitle" />
+</menu>

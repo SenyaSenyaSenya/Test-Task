@@ -1,0 +1,5 @@
+<resources>
+    <dimen name="selector_height">8dp</dimen>
+    <dimen name="bottom_navigation_indicator_size">8dp</dimen>
+    <dimen name="bottom_navigation_indicator_margin">4dp</dimen>
+</resources>
