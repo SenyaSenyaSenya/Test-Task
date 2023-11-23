@@ -20,22 +20,9 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-        <EditText
-            android:id="@+id/editText"
-            android:layout_width="327dp"
-            android:layout_height="50dp"
-            android:layout_marginTop="30dp"
-            android:background="@drawable/search_background"
-            android:drawableStart="@drawable/ic_search"
-            android:drawablePadding="18dp"
-            android:ems="10"
-            android:hint="Search"
-            android:inputType="textPersonName"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            app:layout_constraintTop_toBottomOf="@id/toolbar"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+        <include
+            layout="@layout/search"
+            android:id="@+id/editText"/>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/featuredCollectionsRecyclerView"
@@ -48,14 +35,61 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/editText" />
 
+        <TextView
+            android:id="@+id/tryAgainTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="23sp"
+            android:textStyle="bold"
+            android:textColor="@color/l_red"
+            android:text="Try Again"
+            android:drawableTop="@drawable/ic_try_again"
+            android:visibility="gone"
+            android:gravity="center_horizontal"
+            android:layout_gravity="center_horizontal"
+            app:layout_constraintBottom_toTopOf="@+id/bottomNavigationView"
+            app:layout_constraintEnd_toEndOf="@+id/featuredCollectionsRecyclerView"
+            app:layout_constraintStart_toStartOf="@+id/featuredCollectionsRecyclerView"
+            app:layout_constraintTop_toBottomOf="@+id/editText" />
+        <LinearLayout
+            android:id="@+id/no_results"
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:gravity="center_horizontal"
+            android:layout_gravity="center_horizontal"
+            app:layout_constraintBottom_toTopOf="@+id/bottomNavigationView"
+            app:layout_constraintEnd_toEndOf="@+id/featuredCollectionsRecyclerView"
+            app:layout_constraintStart_toStartOf="@+id/featuredCollectionsRecyclerView"
+            app:layout_constraintTop_toBottomOf="@+id/editText" >
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="No results found"
+                android:textSize="18sp" />
+            <TextView
+                android:id="@+id/noResultsTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Explore"
+                android:textSize="23sp"
+                android:textColor="@color/l_red"
+                android:textStyle="bold"
+                android:clickable="true"
+                android:onClick="clearSearch" />
+        </LinearLayout>
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="60dp"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/featuredCollectionsRecyclerView" />
+
         <include
             android:id="@+id/bottomNavigationView"
             layout="@layout/bottom_navigation"
