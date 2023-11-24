@@ -7,6 +7,6 @@
         tools:ignore="MenuTitle" />
     <item
         android:id="@+id/menu_bookmark"
-        android:icon="@drawable/ic_bookmark_enabled"
+        android:icon="@drawable/ic_bookmark_disabled"
         tools:ignore="MenuTitle" />
 </menu>

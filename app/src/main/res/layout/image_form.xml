@@ -10,14 +10,9 @@
         android:layout_height="wrap_content"
         android:adjustViewBounds="true"
         android:background="@drawable/rounded_image_background"
+        android:clipToOutline="true"
         android:padding="8dp"
         android:scaleType="fitCenter" />
 
-
-    <ProgressBar
-        android:id="@+id/progress"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:visibility="visible" />
+    
 </LinearLayout>

@@ -9,6 +9,7 @@ import android.app.Dialog
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.Menu
 import android.view.View
 import android.widget.*
@@ -34,6 +35,8 @@ class HomeScreenActivity : AppCompatActivity() {
     var scrollOutItems = 0
     var searchQuery = String()
     private lateinit var tryAgainTextView: TextView
+    private lateinit var noResultsTextView: TextView
+    private lateinit var noResultsLayout: LinearLayout
     private lateinit var viewModel: PexelsViewModel
     private lateinit var bottomNavigationView: BottomNavigationView
     private lateinit var bottomNavigationHelper: BottomNavigationHelper
@@ -49,6 +52,17 @@ class HomeScreenActivity : AppCompatActivity() {
         bottomNavigationView = findViewById(R.id.bottomNavigationView)
         bottomNavigationHelper = BottomNavigationHelper(this, bottomNavigationView)
         tryAgainTextView = findViewById<TextView>(R.id.tryAgainTextView)
+        noResultsTextView = findViewById(R.id.noResultsTextView)
+        noResultsLayout = findViewById(R.id.no_results)
+        noResultsLayout.visibility = View.GONE
+        tryAgainTextView.setOnClickListener {
+            performSearch("")
+        }
+        noResultsTextView.setOnClickListener {
+            searchEditText.text.clear() // Очищаем поисковую строку
+            loadPopularPhotos() // Вызываем метод для загрузки популярных фотографий
+        }
+        observeData()
         initialiseAdapter()
         requestForData(false, "", false)
         searchEditText = findViewById<EditText>(R.id.editText)
@@ -99,28 +113,22 @@ class HomeScreenActivity : AppCompatActivity() {
         })
     }
 
-    private fun performSearch(query: String) {
-        if (query.isNotEmpty()) {
-            isPhotoSearch = true
-            searchQuery = query
-            requestForData(isPhotoSearch, searchQuery, true)
-        } else {
-            Toast.makeText(this, "Please enter a search query", Toast.LENGTH_SHORT).show()
-        }
-    }
 
 
     private fun initialiseAdapter() {
         val layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         recyclerView.layoutManager = layoutManager
-        observeData()
+
+        if (viewModel.arrayList.isEmpty()) {
+            noResultsLayout.visibility = View.VISIBLE
+        } else {
+            noResultsLayout.visibility = View.GONE
+        }
     }
 
     private fun observeData() {
         adapter = PexelsPhotoAdapter(this, viewModel.arrayList)
         recyclerView.adapter = adapter
-
-        val noResultsLayout = findViewById<LinearLayout>(R.id.no_results)
         if (viewModel.arrayList.isEmpty()) {
             noResultsLayout.visibility = View.VISIBLE
         } else {
@@ -139,11 +147,25 @@ class HomeScreenActivity : AppCompatActivity() {
             }
         } else {
             tryAgainTextView.visibility = View.VISIBLE
+            noResultsLayout.visibility = View.GONE
             Toast.makeText(this, "No Internet Connection", Toast.LENGTH_LONG).show()
         }
     }
-    fun clearSearch(view: View) {
-        searchEditText.text.clear()
+    private fun loadPopularPhotos() {
+        isPhotoSearch = false
+        searchQuery = ""
+        requestForData(isPhotoSearch, searchQuery, true)
+    }
+
+    private fun performSearch(query: String) {
+        val trimmedQuery = query.trim()
+        if (trimmedQuery.isNotEmpty()) {
+            isPhotoSearch = true
+            searchQuery = trimmedQuery
+            requestForData(isPhotoSearch, searchQuery, true)
+        } else {
+            loadPopularPhotos()
+        }
     }
     @SuppressLint("ResourceType")
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

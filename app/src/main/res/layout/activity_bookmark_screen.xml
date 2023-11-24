@@ -6,6 +6,15 @@
     android:layout_height="match_parent"
     tools:context=".ui.BookmarkScreenActivity">
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewDB"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        app:layout_constraintBottom_toTopOf="@+id/bottomNavigationView"
+        app:layout_constraintTop_toTopOf="parent"
+        app:spanCount="2"
+        tools:listitem="@layout/image_form" />
     <include
         android:id="@+id/bottomNavigationView"
         layout="@layout/bottom_navigation"

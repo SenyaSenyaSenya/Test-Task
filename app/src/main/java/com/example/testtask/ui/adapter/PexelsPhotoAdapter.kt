@@ -20,19 +20,22 @@ import java.util.*
 
 class PexelsPhotoAdapter(
     private val context: Context,
-    private val dataSet: ArrayList<PexelsImageWrapper>
+    private var dataSet: ArrayList<PexelsImageWrapper>
 ) : RecyclerView.Adapter<PexelsPhotoAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         var imageView: ImageView
-        var progress: ProgressBar
+       // var progress: ProgressBar
 
         init {
             imageView = itemView.findViewById(R.id.imageViewItem)
-            progress = itemView.findViewById(R.id.progress)
+//            progress = itemView.findViewById(R.id.progress)
         }
     }
-
+    fun updateData(newDataSet: ArrayList<PexelsImageWrapper>) {
+        dataSet = newDataSet
+        notifyDataSetChanged()
+    }
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(viewGroup.context)
             .inflate(R.layout.image_form, viewGroup, false)
@@ -63,7 +66,7 @@ class PexelsPhotoAdapter(
                     target: Target<Drawable>?,
                     isFirstResource: Boolean
                 ): Boolean {
-                    viewHolder.progress.visibility = View.GONE
+                  //  viewHolder.progress.visibility = View.GONE
                     return false
                 }
 
@@ -74,14 +77,12 @@ class PexelsPhotoAdapter(
                     dataSource: DataSource?,
                     isFirstResource: Boolean
                 ): Boolean {
-                    viewHolder.progress.visibility = View.GONE
+                   // viewHolder.progress.visibility = View.GONE
                     return false
                 }
             })
             .into(viewHolder.imageView)
 
-        viewHolder.imageView.clipToOutline = true // Применение закругленных углов
-        viewHolder.imageView.background = context.getDrawable(R.drawable.rounded_image_background)
 
         viewHolder.imageView.setOnClickListener {
             val originalUrl = image.originalUrl

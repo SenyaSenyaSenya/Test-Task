@@ -14,4 +14,10 @@ class PexelsImageWrapper {
         this.originalUrl = originalUrl
         this.mediumUrl = mediumUrl
     }
+
+    constructor(originalUrl: String?, photographer: String?, mediumUrl: String?) {
+        this.originalUrl = originalUrl
+        this.photographer = photographer
+        this.mediumUrl = mediumUrl
+    }
 }

@@ -11,21 +11,29 @@ import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.room.Room
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.example.testtask.R
+import com.example.testtask.data.ImageDatabase
+import com.example.testtask.data.ImageEntity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class DetailsScreenActivity : AppCompatActivity() {
 
     var originalUrl = String()
+    var mediumUrl = String()
     lateinit var photoView: ImageView
     lateinit var backButton: ImageView
     lateinit var progress: ProgressBar
     lateinit var titleName: TextView
-
+    private lateinit var database: ImageDatabase
+    private var isBookmarked = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_full_screen_image)
@@ -37,7 +45,7 @@ class DetailsScreenActivity : AppCompatActivity() {
         photoView = findViewById(R.id.photoView)
         backButton = findViewById(R.id.back_button)
         progress = findViewById(R.id.progress)
-        originalUrl = intent.getStringExtra("originalUrl").toString()
+        mediumUrl = intent.getStringExtra("mediumUrl").toString()
         val photographer =
             intent.getStringExtra("photographer") // Получаем значение photographer из Intent
 
@@ -71,7 +79,11 @@ class DetailsScreenActivity : AppCompatActivity() {
                 }
             })
             .into(photoView)
-
+        database = Room.databaseBuilder(
+            applicationContext,
+            ImageDatabase::class.java,
+            "app_database"
+        ).build()
         downloadButton.setOnClickListener {
             val url = originalUrl // Получение URL оригинальной фотографии
 
@@ -87,10 +99,22 @@ class DetailsScreenActivity : AppCompatActivity() {
             val downloadManager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
             downloadManager.enqueue(request)
         }
-
         bookmarkButton.setOnClickListener {
-        }
+            val imageEntity = ImageEntity(originalUrl = originalUrl, photographer = photographer, mediumUrl = mediumUrl)
 
+            CoroutineScope(Dispatchers.IO).launch {
+                val imageDao = database.imageDao()
+
+                val existingImage = imageDao.getImageByOriginalUrl(originalUrl)
+                if (existingImage != null) {
+                    // Запись уже существует, поэтому удаляем её
+                    imageDao.deleteImageByOriginalUrl(originalUrl)
+                } else {
+                    // Запись не существует, поэтому вставляем её
+                    imageDao.insertImage(imageEntity)
+                }
+            }
+        }
         backButton.setOnClickListener {
             finish()
         }
