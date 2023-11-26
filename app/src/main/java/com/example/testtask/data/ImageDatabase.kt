@@ -10,10 +10,6 @@ abstract class ImageDatabase : RoomDatabase() {
 
     abstract fun imageDao(): ImageDao
 
-    suspend fun deleteImage(originalUrl: String) {
-        val imageDao = imageDao()
-        imageDao.deleteImageByOriginalUrl(originalUrl)
-    }
 
     companion object {
         private var instance: ImageDatabase? = null

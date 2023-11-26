@@ -33,7 +33,6 @@ class DetailsScreenActivity : AppCompatActivity() {
     lateinit var progress: ProgressBar
     lateinit var titleName: TextView
     private lateinit var database: ImageDatabase
-    private var isBookmarked = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_full_screen_image)
@@ -46,11 +45,9 @@ class DetailsScreenActivity : AppCompatActivity() {
         backButton = findViewById(R.id.back_button)
         progress = findViewById(R.id.progress)
         mediumUrl = intent.getStringExtra("mediumUrl").toString()
-        val photographer =
-            intent.getStringExtra("photographer") // Получаем значение photographer из Intent
-
+        val photographer = intent.getStringExtra("photographer")
         titleName = findViewById(R.id.title_name)
-        titleName.text = photographer // Устанавливаем значение photographer в поле title_name
+        titleName.text = photographer
 
 
         Glide.with(this)
@@ -62,7 +59,6 @@ class DetailsScreenActivity : AppCompatActivity() {
                     p2: Target<Drawable>?,
                     p3: Boolean
                 ): Boolean {
-                    // Обработка ошибки загрузки изображения
                     return false
                 }
 
@@ -73,7 +69,6 @@ class DetailsScreenActivity : AppCompatActivity() {
                     p3: DataSource?,
                     p4: Boolean
                 ): Boolean {
-                    // Действия при успешной загрузке изображения
                     progress.visibility = View.GONE
                     return false
                 }
@@ -85,32 +80,34 @@ class DetailsScreenActivity : AppCompatActivity() {
             "app_database"
         ).build()
         downloadButton.setOnClickListener {
-            val url = originalUrl // Получение URL оригинальной фотографии
+            val url = originalUrl
 
             val request = DownloadManager.Request(Uri.parse(url))
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                .setTitle("Downloading Photo") // Заголовок уведомления о скачивании
-                .setDescription("Downloading photo from $url") // Описание уведомления о скачивании
+                .setTitle("Downloading Photo")
+                .setDescription("Downloading photo from $url")
                 .setDestinationInExternalPublicDir(
                     Environment.DIRECTORY_PICTURES,
                     "Photo.jpg"
-                ) // Путь сохранения скачанного файла
+                )
 
             val downloadManager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
             downloadManager.enqueue(request)
         }
         bookmarkButton.setOnClickListener {
-            val imageEntity = ImageEntity(originalUrl = originalUrl, photographer = photographer, mediumUrl = mediumUrl)
+            val imageEntity = ImageEntity(
+                originalUrl = originalUrl,
+                photographer = photographer,
+                mediumUrl = mediumUrl
+            )
 
             CoroutineScope(Dispatchers.IO).launch {
                 val imageDao = database.imageDao()
 
                 val existingImage = imageDao.getImageByOriginalUrl(originalUrl)
                 if (existingImage != null) {
-                    // Запись уже существует, поэтому удаляем её
                     imageDao.deleteImageByOriginalUrl(originalUrl)
                 } else {
-                    // Запись не существует, поэтому вставляем её
                     imageDao.insertImage(imageEntity)
                 }
             }

@@ -6,6 +6,36 @@
     android:layout_height="match_parent"
     tools:context=".ui.BookmarkScreenActivity">
 
+    <LinearLayout
+        android:id="@+id/no_saved"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/bottomNavigationView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/recyclerViewDB"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="You haven't saved anything yet"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/noSavedTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:text="Explore"
+            android:textColor="@color/l_red"
+            android:textSize="23sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewDB"
         android:layout_width="match_parent"

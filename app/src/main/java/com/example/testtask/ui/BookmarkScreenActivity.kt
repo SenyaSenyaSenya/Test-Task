@@ -5,6 +5,7 @@ import PexelsPhotoAdapter
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
+import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
@@ -14,6 +15,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class BookmarkScreenActivity : AppCompatActivity() {
@@ -29,9 +31,9 @@ class BookmarkScreenActivity : AppCompatActivity() {
         bottomNavigationView = findViewById(R.id.bottomNavigationView)
         bottomNavigationHelper = BottomNavigationHelper(this, bottomNavigationView)
         recyclerView = findViewById(R.id.recyclerViewDB)
-        imageAdapter = ImageAdapter()
-
         db = ImageDatabase.getInstance(applicationContext)
+        imageAdapter = ImageAdapter(this, db)
+
         val layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
 
         recyclerView.layoutManager = layoutManager
@@ -39,16 +41,24 @@ class BookmarkScreenActivity : AppCompatActivity() {
         initialiseAdapter()
         displayImagesFromDatabase()
     }
+
     private fun initialiseAdapter() {
         val layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         recyclerView.layoutManager = layoutManager
-
-
+        imageAdapter = ImageAdapter(this, db)
+        recyclerView.adapter = imageAdapter
     }
+
     private fun displayImagesFromDatabase() {
         CoroutineScope(Dispatchers.Main).launch {
+            val imageCount = withContext(Dispatchers.IO) {
+                db.imageDao().getImageCount()
+            }
+           if (imageCount==0) findViewById<TextView>(R.id.no_results).visibility = View.VISIBLE
+
             val images = db.imageDao().getAllImages()
             imageAdapter.setImages(images)
+            recyclerView.adapter?.notifyDataSetChanged()
         }
     }
 }

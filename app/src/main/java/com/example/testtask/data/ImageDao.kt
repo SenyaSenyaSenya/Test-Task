@@ -17,4 +17,7 @@ interface ImageDao {
 
     @Query("SELECT * FROM images WHERE originalUrl = :originalUrl LIMIT 1")
     suspend fun getImageByOriginalUrl(originalUrl: String): ImageEntity?
+
+    @Query("SELECT COUNT(*) FROM images")
+    suspend fun getImageCount(): Int
 }

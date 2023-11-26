@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.ProgressBar
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
@@ -31,10 +30,6 @@ class PexelsPhotoAdapter(
             imageView = itemView.findViewById(R.id.imageViewItem)
 //            progress = itemView.findViewById(R.id.progress)
         }
-    }
-    fun updateData(newDataSet: ArrayList<PexelsImageWrapper>) {
-        dataSet = newDataSet
-        notifyDataSetChanged()
     }
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(viewGroup.context)
@@ -86,7 +81,7 @@ class PexelsPhotoAdapter(
 
         viewHolder.imageView.setOnClickListener {
             val originalUrl = image.originalUrl
-            val photographer = image.photographer // Извлекаем имя фотографа
+            val photographer = image.photographer
             val intent = Intent(context, DetailsScreenActivity::class.java)
             intent.putExtra("originalUrl", originalUrl)
             intent.putExtra("photographer", photographer) // Передаем значение photographer в Intent

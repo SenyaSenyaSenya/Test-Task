@@ -20,16 +20,14 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/textViewCaption"
-        android:layout_margin="8dp"
+        android:id="@+id/textViewName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="8dp"
         android:background="@drawable/rounded_bottom_corners"
-        android:text="Your Caption"
+        android:gravity="center"
         android:textColor="#FFFFFF"
         android:textSize="19sp"
-        android:scaleType="fitCenter"
-        android:alpha="0.4"
         app:layout_constraintBottom_toBottomOf="@id/imageViewItem"
         app:layout_constraintEnd_toEndOf="@id/imageViewItem" />
 
