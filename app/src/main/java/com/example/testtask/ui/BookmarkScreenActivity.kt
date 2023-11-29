@@ -35,7 +35,7 @@ class BookmarkScreenActivity : AppCompatActivity() {
         imageAdapter = ImageAdapter(this, db)
 
         val layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
-
+        bottomNavigationView.menu.findItem(R.id.menu_bookmark).isChecked = true
         recyclerView.layoutManager = layoutManager
         recyclerView.adapter = imageAdapter
         initialiseAdapter()
@@ -54,7 +54,7 @@ class BookmarkScreenActivity : AppCompatActivity() {
             val imageCount = withContext(Dispatchers.IO) {
                 db.imageDao().getImageCount()
             }
-           if (imageCount==0) findViewById<TextView>(R.id.no_results).visibility = View.VISIBLE
+//           if (imageCount==0) findViewById<TextView>(R.id.no_results).visibility = View.VISIBLE
 
             val images = db.imageDao().getAllImages()
             imageAdapter.setImages(images)

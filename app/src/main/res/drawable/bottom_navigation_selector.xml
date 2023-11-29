@@ -1,4 +1,4 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:color="@color/l_red" android:state_checked="true" /> <!-- Цвет активной иконки и селектора -->
-    <item android:color="#868686" /> <!-- Цвет неактивной иконки -->
+    <item android:drawable="@drawable/bottom_navigation_selected_indicator" android:state_checked="true" android:color="@color/l_red" />
+    <item android:color="#868686" android:state_checked="false" />
 </selector>

@@ -4,6 +4,7 @@
     android:id="@+id/bottom_navigation"
     app:itemIconTint="@drawable/bottom_navigation_selector"
     app:itemTextColor="@drawable/bottom_navigation_selector"
+    app:itemBackground="@drawable/bottom_navigation_selected_indicator"
     app:menu="@menu/bottom_navigation_menu"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"

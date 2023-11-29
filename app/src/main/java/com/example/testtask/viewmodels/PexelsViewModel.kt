@@ -1,23 +1,27 @@
-package com.example.testtask.viewmodels
-
-import PexelsPhotoAdapter
 import android.app.AlertDialog
 import android.content.Context
-import androidx.lifecycle.MutableLiveData
+import android.util.Log
 import androidx.lifecycle.ViewModel
-import com.android.volley.AuthFailureError
-import com.android.volley.Request
-import com.android.volley.Response
-import com.android.volley.toolbox.StringRequest
-import com.android.volley.toolbox.Volley
+import com.example.testtask.model.PexelsImageSource
 import com.example.testtask.model.PexelsImageWrapper
-import org.json.JSONException
-import org.json.JSONObject
+import com.example.testtask.ui.featured.CollectionTitle
+import com.google.gson.annotations.SerializedName
+import okhttp3.OkHttpClient
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.GET
+import retrofit2.http.Header
+import retrofit2.http.Query
+import retrofit2.http.Url
 
 class PexelsViewModel : ViewModel() {
 
-    var pageNumber = 1
-    var arrayList = ArrayList<PexelsImageWrapper>()
+    private var pageNumber = 1
+    internal var arrayList = ArrayList<PexelsImageWrapper>()
+    private val apiKey = "MNmAc04M8gHVwC2sAPybzs4o1E4jnSEBgvo3HmlTYp3mU0mKvbombz7p"
 
     fun getPexelsData(
         context: Context,
@@ -26,7 +30,6 @@ class PexelsViewModel : ViewModel() {
         isAction: Boolean,
         adapter: PexelsPhotoAdapter
     ) {
-
         if (isAction) {
             arrayList.clear()
             pageNumber = 1
@@ -34,66 +37,104 @@ class PexelsViewModel : ViewModel() {
         fetchPhotosFromApi(context, isSearch, searchQuery, adapter)
     }
 
-    fun fetchPhotosFromApi(
+    private fun fetchPhotosFromApi(
         context: Context,
         isSearch: Boolean,
         searchQuery: String,
         adapter: PexelsPhotoAdapter
     ) {
+        val baseUrl = "https://api.pexels.com/v1/"
+        val retrofit = Retrofit.Builder()
+            .baseUrl(baseUrl)
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(OkHttpClient.Builder().build())
+            .build()
 
-        var url = String()
-        if (isSearch) {
-            url =
-                "https://api.pexels.com/v1/search/?page=$pageNumber&per_page=80&query=$searchQuery"
+        val service = retrofit.create(PexelsService::class.java)
+
+        val call: Call<PexelsApiResponse> = if (isSearch) {
+            service.searchPhotos(searchQuery, pageNumber, apiKey)
         } else {
-            url = "https://api.pexels.com/v1/curated/?page=$pageNumber&per_page=30"
+            service.getCuratedPhotos(pageNumber, 30, apiKey)
         }
 
-        val request: StringRequest = object : StringRequest(
-            Request.Method.GET, url,
-            Response.Listener { response ->
-                try {
-                    val jsonObject = JSONObject(response)
-                    val jsonArray = jsonObject.getJSONArray("photos")
-                    val length = jsonArray.length()
-
-                    if (length != 0) {
-                        for (i in 0 until length) {
-                            val `object` = jsonArray.getJSONObject(i)
-                            val id = `object`.getInt("id")
-                            val objectImages = `object`.getJSONObject("src")
-                            val objectphotographer = `object`.getString("photographer")
-                            val orignalUrl = objectImages.getString("original")
-                            val mediumUrl = objectImages.getString("medium")
-                            val pexelsImageWrapper =
-                                PexelsImageWrapper(id, objectphotographer, orignalUrl, mediumUrl)
-                            arrayList.add(pexelsImageWrapper);
-                            //newlist.add(pexelsImageWrapper)
+        call.enqueue(object : Callback<PexelsApiResponse> {
+            override fun onResponse(
+                call: Call<PexelsApiResponse>,
+                response: Response<PexelsApiResponse>
+            ) {
+                if (response.isSuccessful) {
+                    val pexelsApiResponse = response.body()
+                    if (pexelsApiResponse != null && pexelsApiResponse.photos != null) {
+                        val photos = pexelsApiResponse.photos
+                        if (photos.isNotEmpty()) {
+                            for (photo in photos) {
+                                val id = photo.id
+                                val photographer = photo.photographer
+                                val source = photo.source
+                                val pexelsImageWrapper =
+                                    PexelsImageWrapper(id, photographer, source)
+                                arrayList.add(pexelsImageWrapper)
+                            }
+                            adapter.notifyDataSetChanged()
+                            pageNumber++
+                        } else {
+                            showNoDataFoundDialog(context)
                         }
-                        //lst.value=newlist
-                        adapter.notifyDataSetChanged()
-                        pageNumber++
                     } else {
-                        val dialog = AlertDialog.Builder(context)
-                        dialog.setTitle("No data found")
-                        dialog.setNegativeButton(
-                            "Cancel"
-                        ) { dialogInterface, i ->
-                        }
-                        dialog.show()
+                        showNoDataFoundDialog(context)
                     }
-                } catch (e: JSONException) {
+                } else {
+                    handleRequestError()
                 }
-            }, Response.ErrorListener { }) {
-            @Throws(AuthFailureError::class)
-            override fun getHeaders(): Map<String, String> {
-                val params: MutableMap<String, String> = HashMap()
-                params["Authorization"] = "MNmAc04M8gHVwC2sAPybzs4o1E4jnSEBgvo3HmlTYp3mU0mKvbombz7p"
-                return params
             }
-        }
-        val requestQueue = Volley.newRequestQueue(context)
-        requestQueue.add(request)
+
+            override fun onFailure(call: Call<PexelsApiResponse>, t: Throwable) {
+                t.printStackTrace()
+                handleRequestError()
+            }
+        })
     }
 
+    private fun showNoDataFoundDialog(context: Context) {
+        val dialog = AlertDialog.Builder(context)
+            .setTitle("No data found")
+            .setNegativeButton("Cancel") { dialogInterface, _ ->
+                dialogInterface.dismiss()
+            }
+            .create()
+        dialog.show()
+    }
+
+    private fun handleRequestError() {
+        println("Error occurred while executing the request")
+    }
+
+    interface PexelsService {
+        @GET
+        fun getPhotos(
+            @Url url: String,
+            @Header("Authorization") apiKey: String
+        ): Call<PexelsApiResponse>
+
+        @GET("curated")
+        fun getCuratedPhotos(
+            @Query("page") page: Int,
+            @Query("per_page") perPage: Int,
+            @Header("Authorization") apiKey: String
+        ): Call<PexelsApiResponse>
+        @GET("featured_collections")
+        fun getFeaturedCollections(): Call<List<CollectionTitle>>
+        @GET("search/")
+        fun searchPhotos(
+            @Query("query") query: String,
+            @Query("page") page: Int,
+            @Header("Authorization") apiKey: String
+        ): Call<PexelsApiResponse>
+    }
+
+    data class PexelsApiResponse(
+        @SerializedName("photos")
+        val photos: List<PexelsImageWrapper>
+    )
 }

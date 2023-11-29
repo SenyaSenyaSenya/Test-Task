@@ -6,21 +6,12 @@
     android:orientation="vertical">
 
     <!-- Прямоугольник с закругленными краями -->
-    <LinearLayout
+    <TextView
+        android:id="@+id/titleTextView"
         android:layout_width="match_parent"
+        android:background="@color/l_white"
         android:layout_height="wrap_content"
-        android:background="@drawable/search_background"
-        android:orientation="vertical"
-        android:padding="8dp">
-
-        <!-- Заголовок -->
-        <TextView
-            android:id="@+id/titleTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@color/black"
-            android:textSize="10sp" />
-
-    </LinearLayout>
+        android:textColor="@color/black"
+        android:textSize="10sp" />
 
 </LinearLayout>

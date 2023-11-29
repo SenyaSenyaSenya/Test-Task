@@ -1,6 +1,7 @@
 import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Drawable
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,11 +25,9 @@ class PexelsPhotoAdapter(
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         var imageView: ImageView
-       // var progress: ProgressBar
 
         init {
             imageView = itemView.findViewById(R.id.imageViewItem)
-//            progress = itemView.findViewById(R.id.progress)
         }
     }
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
@@ -61,7 +60,8 @@ class PexelsPhotoAdapter(
                     target: Target<Drawable>?,
                     isFirstResource: Boolean
                 ): Boolean {
-                  //  viewHolder.progress.visibility = View.GONE
+                    // Вывод сообщения об ошибке в консоль
+                    Log.e("Glide", "Failed to load image: $e")
                     return false
                 }
 
@@ -72,7 +72,8 @@ class PexelsPhotoAdapter(
                     dataSource: DataSource?,
                     isFirstResource: Boolean
                 ): Boolean {
-                   // viewHolder.progress.visibility = View.GONE
+                    // Вывод сообщения об успешной загрузке изображения в консоль
+                    Log.d("Glide", "Image loaded successfully")
                     return false
                 }
             })

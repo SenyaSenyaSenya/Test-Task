@@ -1,8 +1,8 @@
 package com.example.testtask.viewmodels
-
+import PexelsViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.testtask.viewmodels.PexelsViewModel
+
 
 class ViewModelFactory(): ViewModelProvider.Factory{
     override fun <T : ViewModel> create(modelClass: Class<T>): T {

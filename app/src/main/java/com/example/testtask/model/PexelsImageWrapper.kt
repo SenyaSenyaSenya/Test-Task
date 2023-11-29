@@ -1,23 +1,16 @@
 package com.example.testtask.model
 
+import com.google.gson.annotations.SerializedName
 
-class PexelsImageWrapper {
-    var id = 0
-    var originalUrl: String? = null
-    var photographer: String? = null
-    var mediumUrl: String? = null
+data class PexelsImageWrapper(
+    val id: Int,
+    val photographer: String?,
+    @SerializedName("src") val source: PexelsImageSource?
+) {
+    val originalUrl: String?
+        get() = source?.original
 
-    constructor() {}
-    constructor(id: Int, photographer: String?, originalUrl: String?, mediumUrl: String?) {
-        this.id = id
-        this.photographer = photographer
-        this.originalUrl = originalUrl
-        this.mediumUrl = mediumUrl
-    }
-
-    constructor(originalUrl: String?, photographer: String?, mediumUrl: String?) {
-        this.originalUrl = originalUrl
-        this.photographer = photographer
-        this.mediumUrl = mediumUrl
-    }
+    val mediumUrl: String?
+        get() = source?.medium
 }
+

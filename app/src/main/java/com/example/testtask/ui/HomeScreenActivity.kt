@@ -3,9 +3,11 @@
 package com.example.testtask.ui
 
 import BottomNavigationHelper
+import FeaturedCollectionsAdapter
 import PexelsPhotoAdapter
+import PexelsViewModel
 import android.annotation.SuppressLint
-import android.app.Dialog
+import android.content.ContentValues.TAG
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -15,40 +17,54 @@ import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.example.testtask.R
+import com.example.testtask.ui.featured.CollectionTitle
 import com.example.testtask.util.EditTextUtils
 import com.example.testtask.util.NetworkUtils
-import com.example.testtask.viewmodels.PexelsViewModel
 import com.example.testtask.viewmodels.ViewModelFactory
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 class HomeScreenActivity : AppCompatActivity() {
+    private lateinit var pexelsService: PexelsViewModel.PexelsService
+    private lateinit var featuredCollectionsRecyclerView: RecyclerView
+
     private lateinit var adapter: PexelsPhotoAdapter
     private lateinit var recyclerView: RecyclerView
     private lateinit var searchEditText: EditText
-    var isScrolling = false
-    var isPhotoSearch = false
-    var currentItems = 0
-    var totalItems = 0
-    var scrollOutItems = 0
-    var searchQuery = String()
+    private var isScrolling = false
+    private var isPhotoSearch = false
+    private var currentItems = 0
+    private var totalItems = 0
+    private var scrollOutItems = 0
+    private var searchQuery = ""
     private lateinit var tryAgainTextView: TextView
     private lateinit var noResultsTextView: TextView
     private lateinit var noResultsLayout: LinearLayout
     private lateinit var viewModel: PexelsViewModel
     private lateinit var bottomNavigationView: BottomNavigationView
     private lateinit var bottomNavigationHelper: BottomNavigationHelper
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.slide_out_right)
         setContentView(R.layout.activity_home_screen)
         recyclerView = findViewById(R.id.recyclerView)
-        val layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
-        recyclerView.layoutManager = layoutManager
         val factory = ViewModelFactory()
         viewModel = ViewModelProviders.of(this, factory).get(PexelsViewModel::class.java)
+        adapter = PexelsPhotoAdapter(this, viewModel.arrayList)
+        recyclerView.adapter = adapter
+
+        val layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+        recyclerView.layoutManager = layoutManager
+
         bottomNavigationView = findViewById(R.id.bottomNavigationView)
         bottomNavigationHelper = BottomNavigationHelper(this, bottomNavigationView)
         tryAgainTextView = findViewById<TextView>(R.id.tryAgainTextView)
@@ -59,9 +75,10 @@ class HomeScreenActivity : AppCompatActivity() {
             performSearch("")
         }
         noResultsTextView.setOnClickListener {
-            searchEditText.text.clear() // Очищаем поисковую строку
-            loadPopularPhotos() // Вызываем метод для загрузки популярных фотографий
+            searchEditText.text.clear()
+            loadPopularPhotos()
         }
+
         observeData()
         initialiseAdapter()
         requestForData(false, "", false)
@@ -74,6 +91,41 @@ class HomeScreenActivity : AppCompatActivity() {
                 requestForData(false, "", false)
             }
         }
+        featuredCollectionsRecyclerView = findViewById(R.id.featuredCollectionsRecyclerView)
+        featuredCollectionsRecyclerView.layoutManager = LinearLayoutManager(this)
+        featuredCollectionsRecyclerView.setHasFixedSize(true)
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://api.pexels.com/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        pexelsService = retrofit.create(PexelsViewModel.PexelsService::class.java)
+
+        val call = pexelsService.getFeaturedCollections()
+        call.enqueue(object : Callback<List<CollectionTitle>> {
+            override fun onResponse(
+                call: Call<List<CollectionTitle>>,
+                response: Response<List<CollectionTitle>>
+            ) {
+                Log.d("response", response.isSuccessful.toString())
+                if (response.isSuccessful) {
+                    val collectionTitles = response.body()?.map { it.title } ?: emptyList()
+                    val titleAdapter = FeaturedCollectionsAdapter(collectionTitles)
+                    featuredCollectionsRecyclerView.adapter = titleAdapter
+                    titleAdapter.notifyDataSetChanged()
+                    for (title in collectionTitles) {
+                        Log.i("Title is", title)
+                    }
+                } else {
+                    Log.e(TAG, "Error: ${response.code()}")
+                }
+            }
+
+            override fun onFailure(call: Call<List<CollectionTitle>>, t: Throwable) {
+                Log.e(TAG, "Request execution error: ${t.message}")
+            }
+        })
+
         searchEditText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
@@ -114,10 +166,10 @@ class HomeScreenActivity : AppCompatActivity() {
     }
 
 
-
     private fun initialiseAdapter() {
         val layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         recyclerView.layoutManager = layoutManager
+        recyclerView.adapter = adapter
 
         if (viewModel.arrayList.isEmpty()) {
             noResultsLayout.visibility = View.VISIBLE
@@ -127,20 +179,20 @@ class HomeScreenActivity : AppCompatActivity() {
     }
 
     private fun observeData() {
-        adapter = PexelsPhotoAdapter(this, viewModel.arrayList)
-        recyclerView.adapter = adapter
         if (viewModel.arrayList.isEmpty()) {
             noResultsLayout.visibility = View.VISIBLE
         } else {
             noResultsLayout.visibility = View.GONE
         }
+        adapter.notifyDataSetChanged()
     }
 
     private fun requestForData(isSearch: Boolean, searchQuery: String, isAction: Boolean) {
         if (NetworkUtils.isNetworkAvailable(this)) {
             try {
                 viewModel.getPexelsData(this, isSearch, searchQuery, isAction, adapter)
-                tryAgainTextView.visibility = View.GONE // Скрываем tryAgainTextView, если интернет-соединение восстановлено
+                tryAgainTextView.visibility =
+                    View.GONE
             } catch (e: Exception) {
                 val errorMessage = "Network request failed: ${e.message}"
                 Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show()
@@ -151,6 +203,7 @@ class HomeScreenActivity : AppCompatActivity() {
             Toast.makeText(this, "No Internet Connection", Toast.LENGTH_LONG).show()
         }
     }
+
     private fun loadPopularPhotos() {
         isPhotoSearch = false
         searchQuery = ""
@@ -167,6 +220,7 @@ class HomeScreenActivity : AppCompatActivity() {
             loadPopularPhotos()
         }
     }
+
     @SuppressLint("ResourceType")
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.xml.search_menu, menu)
