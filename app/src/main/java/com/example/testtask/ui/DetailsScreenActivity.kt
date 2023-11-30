@@ -2,20 +2,17 @@ package com.example.testtask.ui
 
 import android.app.Activity
 import android.app.DownloadManager
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.res.ColorStateList
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.view.View
-import android.widget.Button
-import android.widget.FrameLayout
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.ProgressBar
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.room.Room
 import com.bumptech.glide.Glide
@@ -103,7 +100,35 @@ class DetailsScreenActivity : AppCompatActivity() {
                 )
 
             val downloadManager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-            downloadManager.enqueue(request)
+            val downloadId = downloadManager.enqueue(request)
+            val receiver = object : BroadcastReceiver() {
+                override fun onReceive(context: Context?, intent: Intent?) {
+                    val action = intent?.action
+                    if (DownloadManager.ACTION_DOWNLOAD_COMPLETE == action) {
+                        val downloadIdCompleted = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
+                        if (downloadId == downloadIdCompleted) {
+                            val query = DownloadManager.Query().setFilterById(downloadId)
+                            val cursor = downloadManager.query(query)
+                            if (cursor.moveToFirst()) {
+                                val columnIndex = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)
+                                if (columnIndex != -1) {
+                                    val status = cursor.getInt(columnIndex)
+                                    if (status == DownloadManager.STATUS_FAILED) {
+                                        showErrorMessage("Failed to download photo")
+                                    }
+                                } else {
+                                    showErrorMessage("Failed to download photo")
+                                }
+                            } else {
+                                showErrorMessage("Failed to download photo")
+                            }
+                            cursor.close()
+                        }
+                    }
+                }
+            }
+            val filter = IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
+            registerReceiver(receiver, filter)
         }
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -179,7 +204,9 @@ class DetailsScreenActivity : AppCompatActivity() {
             finish()
         }
     }
-
+    private fun showErrorMessage(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
     suspend fun isImageBookmarked(originalUrl: String): Boolean {
         val imageDao = database.imageDao()
         val existingImage = imageDao.getImageByOriginalUrl(originalUrl)
