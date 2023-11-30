@@ -51,7 +51,7 @@ class HomeScreenActivity : AppCompatActivity() {
     private lateinit var viewModel: PexelsViewModel
     private lateinit var bottomNavigationView: BottomNavigationView
     private lateinit var bottomNavigationHelper: BottomNavigationHelper
-
+    private lateinit var progressBar: ProgressBar
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.slide_out_right)
@@ -64,21 +64,20 @@ class HomeScreenActivity : AppCompatActivity() {
 
         val layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         recyclerView.layoutManager = layoutManager
-
+        progressBar = findViewById(R.id.horizontalProgressBar)
+        progressBar.visibility = View.VISIBLE
         bottomNavigationView = findViewById(R.id.bottomNavigationView)
         bottomNavigationHelper = BottomNavigationHelper(this, bottomNavigationView)
         tryAgainTextView = findViewById<TextView>(R.id.tryAgainTextView)
         noResultsTextView = findViewById(R.id.noResultsTextView)
         noResultsLayout = findViewById(R.id.no_results)
-        noResultsLayout.visibility = View.GONE
-        tryAgainTextView.setOnClickListener {
-            performSearch("")
-        }
         noResultsTextView.setOnClickListener {
             searchEditText.text.clear()
             loadPopularPhotos()
         }
-
+        tryAgainTextView.setOnClickListener {
+            performSearch("")
+        }
         observeData()
         initialiseAdapter()
         requestForData(false, "", false)
@@ -170,32 +169,24 @@ class HomeScreenActivity : AppCompatActivity() {
         val layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         recyclerView.layoutManager = layoutManager
         recyclerView.adapter = adapter
-
-        if (viewModel.arrayList.isEmpty()) {
-            noResultsLayout.visibility = View.VISIBLE
-        } else {
-            noResultsLayout.visibility = View.GONE
-        }
     }
 
     private fun observeData() {
-        if (viewModel.arrayList.isEmpty()) {
-            noResultsLayout.visibility = View.VISIBLE
-        } else {
-            noResultsLayout.visibility = View.GONE
-        }
         adapter.notifyDataSetChanged()
     }
 
     private fun requestForData(isSearch: Boolean, searchQuery: String, isAction: Boolean) {
         if (NetworkUtils.isNetworkAvailable(this)) {
+            progressBar.visibility = View.VISIBLE
+
             try {
-                viewModel.getPexelsData(this, isSearch, searchQuery, isAction, adapter)
-                tryAgainTextView.visibility =
-                    View.GONE
+                viewModel.getPexelsData(this, isSearch, searchQuery, isAction, adapter, noResultsLayout)
+                tryAgainTextView.visibility = View.GONE
             } catch (e: Exception) {
                 val errorMessage = "Network request failed: ${e.message}"
                 Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show()
+            } finally {
+                progressBar.visibility = View.GONE
             }
         } else {
             tryAgainTextView.visibility = View.VISIBLE

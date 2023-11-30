@@ -1,6 +1,8 @@
 import android.app.AlertDialog
 import android.content.Context
 import android.util.Log
+import android.view.View
+import android.widget.LinearLayout
 import androidx.lifecycle.ViewModel
 import com.example.testtask.model.PexelsImageSource
 import com.example.testtask.model.PexelsImageWrapper
@@ -28,20 +30,22 @@ class PexelsViewModel : ViewModel() {
         isSearch: Boolean,
         searchQuery: String,
         isAction: Boolean,
-        adapter: PexelsPhotoAdapter
+        adapter: PexelsPhotoAdapter,
+        noResultsLayout: LinearLayout
     ) {
         if (isAction) {
             arrayList.clear()
             pageNumber = 1
         }
-        fetchPhotosFromApi(context, isSearch, searchQuery, adapter)
+        fetchPhotosFromApi(context, isSearch, searchQuery, adapter, noResultsLayout)
     }
 
     private fun fetchPhotosFromApi(
         context: Context,
         isSearch: Boolean,
         searchQuery: String,
-        adapter: PexelsPhotoAdapter
+        adapter: PexelsPhotoAdapter,
+        noResultsLayout: LinearLayout
     ) {
         val baseUrl = "https://api.pexels.com/v1/"
         val retrofit = Retrofit.Builder()
@@ -53,7 +57,7 @@ class PexelsViewModel : ViewModel() {
         val service = retrofit.create(PexelsService::class.java)
 
         val call: Call<PexelsApiResponse> = if (isSearch) {
-            service.searchPhotos(searchQuery, pageNumber, apiKey)
+            service.searchPhotos(searchQuery, pageNumber, 1000, apiKey)
         } else {
             service.getCuratedPhotos(pageNumber, 30, apiKey)
         }
@@ -64,8 +68,10 @@ class PexelsViewModel : ViewModel() {
                 response: Response<PexelsApiResponse>
             ) {
                 if (response.isSuccessful) {
+
                     val pexelsApiResponse = response.body()
                     if (pexelsApiResponse != null && pexelsApiResponse.photos != null) {
+                        noResultsLayout.visibility = View.GONE
                         val photos = pexelsApiResponse.photos
                         if (photos.isNotEmpty()) {
                             for (photo in photos) {
@@ -79,10 +85,10 @@ class PexelsViewModel : ViewModel() {
                             adapter.notifyDataSetChanged()
                             pageNumber++
                         } else {
-                            showNoDataFoundDialog(context)
+                            noResultsLayout.visibility = View.VISIBLE
                         }
                     } else {
-                        showNoDataFoundDialog(context)
+                        noResultsLayout.visibility = View.VISIBLE
                     }
                 } else {
                     handleRequestError()
@@ -96,15 +102,6 @@ class PexelsViewModel : ViewModel() {
         })
     }
 
-    private fun showNoDataFoundDialog(context: Context) {
-        val dialog = AlertDialog.Builder(context)
-            .setTitle("No data found")
-            .setNegativeButton("Cancel") { dialogInterface, _ ->
-                dialogInterface.dismiss()
-            }
-            .create()
-        dialog.show()
-    }
 
     private fun handleRequestError() {
         println("Error occurred while executing the request")
@@ -129,12 +126,15 @@ class PexelsViewModel : ViewModel() {
         fun searchPhotos(
             @Query("query") query: String,
             @Query("page") page: Int,
+            @Query("per_page") perPage: Int?,
             @Header("Authorization") apiKey: String
         ): Call<PexelsApiResponse>
     }
 
     data class PexelsApiResponse(
         @SerializedName("photos")
-        val photos: List<PexelsImageWrapper>
+        val photos: List<PexelsImageWrapper>,
+        @SerializedName("total_results")
+        val totalResults: Int
     )
 }

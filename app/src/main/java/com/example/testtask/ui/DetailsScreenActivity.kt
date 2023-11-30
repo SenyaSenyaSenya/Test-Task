@@ -1,14 +1,19 @@
 package com.example.testtask.ui
 
+import android.app.Activity
 import android.app.DownloadManager
 import android.content.Context
+import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.view.View
+import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -24,6 +29,7 @@ import com.example.testtask.data.ImageEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlin.math.exp
 
 class DetailsScreenActivity : AppCompatActivity() {
 
@@ -33,12 +39,16 @@ class DetailsScreenActivity : AppCompatActivity() {
     lateinit var backButton: ImageView
     lateinit var progress: ProgressBar
     lateinit var titleName: TextView
+    private var isBookmarkEnabled = false
     private lateinit var database: ImageDatabase
+    lateinit var errorLayout: LinearLayout
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_full_screen_image)
+        setContentView(R.layout.activity_details_screen)
         val downloadButton = findViewById<ImageView>(R.id.downloadButton)
-        val bookmarkButton = findViewById<ImageView>(R.id.button_bookmark)
+        val bookmarkButton = findViewById<Button>(R.id.button_bookmark)
+        bookmarkButton.backgroundTintList =
+            ColorStateList.valueOf(resources.getColor(R.color.l_gray))
         titleName = findViewById(R.id.title_name)
         val intent = intent
         originalUrl = intent.getStringExtra("originalUrl").toString()
@@ -49,8 +59,8 @@ class DetailsScreenActivity : AppCompatActivity() {
         val photographer = intent.getStringExtra("photographer")
         titleName = findViewById(R.id.title_name)
         titleName.text = photographer
-
-
+        errorLayout = findViewById(R.id.no_image)
+        val context = this
         Glide.with(this)
             .load(originalUrl).placeholder(R.drawable.placeholder_image)
             .listener(object : RequestListener<Drawable> {
@@ -95,26 +105,84 @@ class DetailsScreenActivity : AppCompatActivity() {
             val downloadManager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
             downloadManager.enqueue(request)
         }
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                if (isImageBookmarked(originalUrl)) {
+                    bookmarkButton.setCompoundDrawablesWithIntrinsicBounds(
+                        0,
+                        0,
+                        R.drawable.ic_bookmark_enabled,
+                        0
+                    )
+                    bookmarkButton.compoundDrawablePadding = 0
+                } else {
+                    bookmarkButton.setCompoundDrawablesWithIntrinsicBounds(
+                        0,
+                        0,
+                        R.drawable.ic_bookmark_disabled,
+                        0
+                    )
+                    bookmarkButton.compoundDrawablePadding = 0
+                }
+            } catch (e: Exception) {
+                runOnUiThread {
+                    errorLayout.visibility = View.VISIBLE
+                    val explore = findViewById<TextView>(R.id.exploreTextView)
+                    explore.setOnClickListener{
+                        val intent = Intent(context, HomeScreenActivity::class.java)
+                        context.startActivity(intent)
+                        if (context is Activity) {
+                            context.overridePendingTransition(R.anim.slide_in, R.anim.slide_out)
+                            context.finish()
+                        }
+                    }
+                }
+            }
+        }
         bookmarkButton.setOnClickListener {
             val imageEntity = ImageEntity(
                 originalUrl = originalUrl,
                 photographer = photographer,
                 mediumUrl = mediumUrl
             )
-
+            isBookmarkEnabled = !isBookmarkEnabled
             CoroutineScope(Dispatchers.IO).launch {
                 val imageDao = database.imageDao()
 
-                val existingImage = imageDao.getImageByOriginalUrl(originalUrl)
-                if (existingImage != null) {
+                if (isImageBookmarked(originalUrl)) {
                     imageDao.deleteImageByOriginalUrl(originalUrl)
+                    runOnUiThread {
+                        bookmarkButton.setCompoundDrawablesWithIntrinsicBounds(
+                            0,
+                            0,
+                            R.drawable.ic_bookmark_disabled,
+                            0
+                        )
+                        bookmarkButton.compoundDrawablePadding = 0
+                    }
                 } else {
                     imageDao.insertImage(imageEntity)
+                    runOnUiThread {
+                        bookmarkButton.setCompoundDrawablesWithIntrinsicBounds(
+                            0,
+                            0,
+                            R.drawable.ic_bookmark_enabled,
+                            0
+                        )
+                        bookmarkButton.compoundDrawablePadding = 0
+                    }
                 }
             }
         }
+
         backButton.setOnClickListener {
             finish()
         }
+    }
+
+    suspend fun isImageBookmarked(originalUrl: String): Boolean {
+        val imageDao = database.imageDao()
+        val existingImage = imageDao.getImageByOriginalUrl(originalUrl)
+        return existingImage != null
     }
 }
