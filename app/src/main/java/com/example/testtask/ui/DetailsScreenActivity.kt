@@ -1,5 +1,6 @@
 package com.example.testtask.ui
 
+import PexelsViewModel
 import android.app.Activity
 import android.app.DownloadManager
 import android.content.BroadcastReceiver
@@ -48,6 +49,7 @@ class DetailsScreenActivity : AppCompatActivity() {
             ColorStateList.valueOf(resources.getColor(R.color.l_gray))
         titleName = findViewById(R.id.title_name)
         val intent = intent
+        val pexelsViewModel = PexelsViewModel()
         originalUrl = intent.getStringExtra("originalUrl").toString()
         photoView = findViewById(R.id.photoView)
         backButton = findViewById(R.id.back_button)
@@ -133,21 +135,19 @@ class DetailsScreenActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 if (isImageBookmarked(originalUrl)) {
-                    bookmarkButton.setCompoundDrawablesWithIntrinsicBounds(
+                    bookmarkButton.setCompoundDrawablesRelativeWithIntrinsicBounds(
                         0,
                         0,
                         R.drawable.ic_bookmark_enabled,
                         0
                     )
-                    bookmarkButton.compoundDrawablePadding = 0
                 } else {
-                    bookmarkButton.setCompoundDrawablesWithIntrinsicBounds(
+                    bookmarkButton.setCompoundDrawablesRelativeWithIntrinsicBounds(
                         0,
                         0,
                         R.drawable.ic_bookmark_disabled,
                         0
                     )
-                    bookmarkButton.compoundDrawablePadding = 0
                 }
             } catch (e: Exception) {
                 runOnUiThread {
